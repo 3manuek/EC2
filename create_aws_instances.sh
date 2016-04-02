@@ -1,5 +1,5 @@
 #!/bin/bash
-# Description: This script is used to launch EC2 instances, you must  provide a csv file with this fields: 
+# Description: This script is used to launch EC2 instances, you must  provide a csv file with this fields:
 #               AMI,I_TYPE,ZONE,ENV,NAME
 # Requirements: This user needs a global variable environment with ec2 keys
 # Author: Narcis pillao - npillao@blackbirdit.com
@@ -52,7 +52,7 @@ if [[ ${list} == 1 ]]; then
   ec2-describe-tags --region ${aws_region} --filter "key=Description" --filter "value=${description}" > ${INSTANCE_OUT}
   grep instance ${INSTANCE_OUT} | awk '{print $3}' |while read line; do
    ec2-describe-instances ${line} --region ${aws_region} |grep INSTANCE |awk '{print "ID:", $2, "Region:", $11, "Instance type:", $9, "IP:", $14, "Public DNS:", $4}'
-  done  
+  done
   echo
   echo "Done"
   rm ${INSTANCE_OUT}
@@ -71,7 +71,7 @@ while read AMI_ID IN_TYPE REGION NAME KEY; do
   [[ ${REGION} == 'us-west-1' ]] &&  s_group=sg-3858d17c
   [[ ${REGION} == 'us-east-1' ]] &&  s_group=sg-c6fdb3ac
   [[ ${REGION} == 'eu-west-1' ]] &&  s_group=sg-4faaac38
-  
+
   ec2-run-instances ${AMI_ID} -t ${IN_TYPE} ${optimized} --region  ${REGION} -g ${s_group} -k ${KEY} -b "/dev/sdc=ephemeral0" -b "/dev/sdd=ephemeral1" > ${INSTANCE_OUT}
   sleep 3
   resource_id=`grep INSTANCE ${INSTANCE_OUT} | awk '{print $2}'`
@@ -81,4 +81,3 @@ while read AMI_ID IN_TYPE REGION NAME KEY; do
 
 done < $FILE_SRC
 IFS=$OLDIFS
-
