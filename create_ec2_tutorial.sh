@@ -27,6 +27,12 @@ usage() {
 }
 
 
+getImages() {
+  # Not working:
+  #aws ec2 --region=us-west-1 describe-images --owners 984907411244  --filters "Name=tag:Name,Values=Breakfixlab_PL16"
+  # need to use jq
+}
+
 allAvailableRegions() {
     egrep -o '[a-z]{2}-[a-z]*-[0-9]' regions.txt | uniq
 }
