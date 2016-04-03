@@ -1,1 +1,4 @@
 Usage: ./create_aws_instances.sh [-f CSV file] [-y: optimized EBS instance] [-l: list breakfixlab instances] [-r region where to find for breakfixlab instances]
+
+
+Desirable in the future, ansible setup https://github.com/adenot/blog-ansible-provision-ec2

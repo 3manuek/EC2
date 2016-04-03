@@ -8,6 +8,12 @@
 # Create a key pair only for the machines.
 # aws ec2 create-key-pair
 
+# Prerequisites:
+# sudo apt-get install jq
+# aws cli is kinda buggy regarding the searches, so I decided to use a json
+# query tool for avoid issues.
+
+
 tag_service=mysql
 description="breakfixlab"
 # INSTANCE_OUT="/tmp/instance_output.$$"
@@ -19,6 +25,20 @@ usage() {
   echo "Usage: $0 [-f CSV file] [-y: optimized EBS instance] [-l: list breakfixlab instances] [-r region where to find for breakfixlab instances]" 1>&2
   exit 1
 }
+
+
+allAvailableRegions() {
+    egrep -o '[a-z]{2}-[a-z]*-[0-9]' regions.txt | uniq
+}
+
+initialSetup() {
+  # get security groups per region, create them
+  # get key pair, mandatory to provide or have one.
+  # get image per region
+  # store them in .db
+}
+
+
 
 updateList() {
   # Update Host list and exit
@@ -32,7 +52,7 @@ updateList() {
 
 
 
-    echo aws ec2 describe-tags --region ${aws_region} --filters "key=description,Values=${description}" >> ${INSTANCE_OUT}
+    aws ec2 describe-tags --region ${aws_region} --filters "key=description,Values=${description}" >> ${INSTANCE_OUT}
     #grep instance ${INSTANCE_OUT} | awk '{print $3}' | while read line; do
     #  aws ec2 describe-instances ${line} --region ${aws_region} | grep INSTANCE |awk '{print "ID:", $2, "Region:", $11, "Instance type:", $9, "IP:", $14, "Public DNS:", $4}'
     #done
@@ -46,6 +66,12 @@ stopAllTheInstancesAcrossAllRegions() {
 
 addInstances() {
   #count instances in region, add numberAddHostsPerRegion
+  [ ! -z "$allRegions" ] && {
+    # All regions
+  } || {
+    # just aws_region
+  }
+
 
 }
 
@@ -68,7 +94,7 @@ while getopts "f:ylr:hu:USa:" o; do
         h)
             usage
             ;;
-        u)
+        u)}"
             updateList
             ;;
         U)
@@ -87,3 +113,5 @@ while getopts "f:ylr:hu:USa:" o; do
     esac
 done
 shift $((OPTIND-1))
+
+[ -z "$aws_region" ] && allRegions=1
