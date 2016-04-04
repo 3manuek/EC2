@@ -1,0 +1,10 @@
+---
+ - hosts: localhost
+   connection: local
+   gather_facts: false
+#   user: root
+   pre_tasks:
+    - include_vars: ec2-vars/{{type}}.yml
+   roles:
+    - provision-ec2
+
