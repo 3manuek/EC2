@@ -2,6 +2,10 @@
 
 Desirable in the future, ansible setup https://github.com/adenot/blog-ansible-provision-ec2
 
+This is a rewritten project (https://github.com/tezuysal-pythian/EC2) but with a totally different approach: more reusable, configurable and manageable. 
+
+This project will be included in Pythian organization, whom supported this project.
+
 Setup a _n_ number of hosts across `regions.txt` available regions.
 
 Requires:
@@ -26,14 +30,22 @@ aws configure
 and, write a `.boto` file under the current folder using `boto_example` as template.
 (This is for ansible).
 
+Credential setup process will change in the future.
 
-# HOWTO
+## TODO
 
-## Configuration
+- Integration with MySQL Sandbox
+- Full EC container service support for simple deploys.
+- Deploy of custom binaries (special for projects that needs an special compilation).
+
+
+## HOWTO
+
+### Configuration
 
 Please check variables in `.create_ec2_tutorial`.
 
-## SecurityGroups
+### SecurityGroups
 
 Run:
 
@@ -41,19 +53,19 @@ Run:
 ./create_ec2_tutorial.sh -s
 ```
 
-## Ansible configuration
+### Ansible configuration
 
 Use .boto file.
 
 
-## Update information
+### Update information
 
 ```
 ./create_ec2_tutorial.sh -U
 ```
 
 
-## General Information
+### General Information
 
 It uses the `.db` file. Ensure you have updated the db. Use [Update Information](## Update information)
 
@@ -62,7 +74,7 @@ It uses the `.db` file. Ensure you have updated the db. Use [Update Information]
 ```
 
 
-## Add instances using ansible
+### Add instances using ansible
 
 Add credentials in .boto
 
