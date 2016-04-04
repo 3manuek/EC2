@@ -27,6 +27,14 @@ Macintosh:EC2 emanuel$ aws ec2 describe-instances \
 ```
 
 
+```
+    #aws ec2 describe-instances --region us-west-1 \
+    # --filters 'Name=tag:mysql,Values=breakfixlab' \
+    # --query 'Reservations[].Instances[].Tags[].Value'
+```
+
+
+
 # Installing and fixing problems in machines
 
 First try:
