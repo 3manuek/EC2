@@ -224,6 +224,7 @@ done
 
 pip install boto
 
+# Install ansible http://docs.ansible.com/ansible/intro_installation.html
 
 ## Options
 
