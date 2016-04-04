@@ -9,7 +9,7 @@
      #vpc_subnet_id: "{{ ec2_subnet_ids|random }}"
      region: "{{ ec2_region }}"
      instance_tags: '{"Name":"{{ec2_tag_Name}}","Type":"{{ec2_tag_Type}}","Environment":"{{ec2_tag_Environment}}"}'
-     assign_public_ip: yes
+     #assign_public_ip: yes
      wait: true
      count: "{{ ec2_count }}"
      volumes: 

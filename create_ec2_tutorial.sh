@@ -10,6 +10,7 @@
 
 # Prerequisites:
 #   sudo apt-get install jq
+#   pip install boto
 # aws cli is kinda buggy regarding the searches, so I decided to use a json
 # query tool for avoid issues.
 
@@ -59,7 +60,6 @@ initialSetup() {
   # get key pair, mandatory to provide or have one.
   # get image per region
   # store them in .db
-
 
   for ar in `allAvailableRegions | xargs echo`
   do
@@ -133,7 +133,7 @@ addInstances() {
     exit 10
   else
     # just aws_region
-    ansible-playbook -vv -i localhost, -e "type=${tagsValue}_${ar}" provision-ec2.yml
+    ansible-playbook -vv -i localhost, -e "type=${tagsValue}_${aws_region}" provision-ec2.yml
   fi
 
 
@@ -165,6 +165,7 @@ generateAnsibleVars() {
   echo "Creating $numAddFromCurrent instances. Dry Run?: ${dry_run:~no}"
   [[ ! -z $numAddFromCurrent ]] && countUp="ec2_count: $numAddFromCurrent"
   # Use the power $dry_run
+  _imageid=$(getImage $ar)
   SECGROUP=$(aws ec2 --region=${ar} describe-security-groups \
              --group-names $tagsName --query 'SecurityGroups[]' | \
              jq -r '.[] | {GroupId}[]' )
@@ -173,12 +174,13 @@ generateAnsibleVars() {
 ec2_keypair: "${KEY}"
 ec2_security_group: "${SECGROUP}"
 ec2_instance_type: "${INSTANCE_SIZE}"
-ec2_image: "${IMAGE}"
+ec2_image: "${_imageid}"
 
 ec2_region: "${ar}"
-ec2_tag_Name: "${tagsValue}"
+ec2_tag_Name: "${tagsName}"
 ec2_tag_Type: "${tagsValue}"
 ec2_tag_Environment: "${tagsValue}"
+ec2_volume_size: 8
 ${countUp}
 _EOF
 
@@ -220,18 +222,15 @@ do
   hash $preq 2>/dev/null || { echo >&2 "I require $preq but it's not installed."; exit 404; }
 done
 
+pip install boto
 
 
 ## Options
 
-while getopts "f:a:ylr:n:DsIyhu:USa:" o; do
+while getopts "f:ylr:n:aDsIyhu:USa:" o; do
     case "${o}" in
         f)
             f=${OPTARG}
-            ;;
-        a)
-            #numberAddHostsPerRegion=${OPTARG}
-            addInstances $aws_region
             ;;
         y)
             optimized='--ebs-optimized'
@@ -244,6 +243,10 @@ while getopts "f:a:ylr:n:DsIyhu:USa:" o; do
             ;;
         n)
             numInstancesRegionArg=${OPTARG}
+            ;;
+        a)
+            #numberAddHostsPerRegion=${OPTARG}
+            addInstances $aws_region
             ;;
         D)
             dry_run=" --dry-run "
