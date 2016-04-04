@@ -126,13 +126,15 @@ getSecurityGroups() {
 addInstances() {
   # $dry_run
   #count instances in region, add numberAddHostsPerRegion
-  [ ! -z "$allRegions" ] && {
+  if [ ! -z "$allRegions" ] ;
+  then
     # All regions
-    echo
-  } || {
+    echo "For all the regions, not supported yet. "
+    exit 10
+  else
     # just aws_region
-    echo
-  }
+    ansible-playbook -vv -i localhost, -e "type=${tagsValue}_${ar}" provision-ec2.yml
+  fi
 
 
 }
@@ -156,6 +158,7 @@ generateSecurityGroupsIfNotExists() {
 # Per region
 generateAnsibleVars() {
   ar=$1
+  ec2_var_filename="ec2-vars/${tagsValue}_${ar}.yml"
   currentInstances=$(grep -c "$1" $INSTANCE_OUT)
   [[ ! -z $numInstancesRegionArg ]] && { numAddFromCurrent=$((numInstancesRegionArg - currentInstances)) ;  }
   [[ $numAddFromCurrent -lt 1 ]] && numAddFromCurrent=1
@@ -165,8 +168,8 @@ generateAnsibleVars() {
   SECGROUP=$(aws ec2 --region=${ar} describe-security-groups \
              --group-names $tagsName --query 'SecurityGroups[]' | \
              jq -r '.[] | {GroupId}[]' )
-  cat /dev/null > ec2-vars/${tagsValue}_${ar}.yml || touch ec2-vars/${tagsValue}_${ar}.yml
-  cat > ec2-vars/${tagsValue}_${ar}.yml <<_EOF
+  cat /dev/null > $ec2_var_filename || touch $ec2_var_filename
+  cat > $ec2_var_filename <<_EOF
 ec2_keypair: "${KEY}"
 ec2_security_group: "${SECGROUP}"
 ec2_instance_type: "${INSTANCE_SIZE}"
@@ -227,7 +230,8 @@ while getopts "f:a:ylr:n:DsIyhu:USa:" o; do
             f=${OPTARG}
             ;;
         a)
-            numberAddHostsPerRegion=${OPTARG}
+            #numberAddHostsPerRegion=${OPTARG}
+            addInstances $aws_region
             ;;
         y)
             optimized='--ebs-optimized'
