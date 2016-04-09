@@ -45,6 +45,20 @@ Credential setup process will change in the future.
 
 Please check variables in `.create_ec2_tutorial`.
 
+```
+# Default variables
+# tag and description of the instances
+tagsName="mysql"
+tagsValue="breakfixlab"
+KEY=breakfixlab
+IMAGE=Breakfixlab_PL16
+INSTANCE_SIZE="m1.small"
+
+SOURCE_IMAGE_REGION="us-west-1"
+INSTANCE_OUT=".db"
+```
+
+
 ### SecurityGroups
 
 Run:

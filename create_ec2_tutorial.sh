@@ -55,6 +55,13 @@ allAvailableRegions() {
     echo $_out | xargs echo
 }
 
+copyImageToRegion() {
+  ar=$1
+  aws --region=$ar ec2 copy-image --source-region=$SOURCE_IMAGE_REGION --source-image-id $(getImage $SOURCE_IMAGE_REGION) --name $IMAGE
+
+}
+
+
 initialSetup() {
   # get security groups per region, create them
   # get key pair, mandatory to provide or have one.
@@ -70,17 +77,19 @@ initialSetup() {
 
      echo Region: $ar
      echo "ImageId $(getImage $ar)"
+     [[ -z $(getImage $ar) ]] && copyImageToRegion $ar 
      echo "  Generating Ansible Vars:"
      generateAnsibleVars $ar
      echo "  Generating SGs"
      generateSecurityGroupsIfNotExists $ar
      echo "  Checking KeyPairs:"
      checkKey $ar || echo "    Create the key on this region TODO: add create key"
+     echo " Cloning the image "
+     copyImageToAllRegions
      echo
   done
 
 }
-
 
 
 # Params:
@@ -133,6 +142,9 @@ addInstances() {
     exit 10
   else
     # just aws_region
+    # checkImage $aws_region  # check if any
+    # if not, execute: ansible-playbook -vv -i localhost, -e "type=${tagsValue}_${aws_region}_image" provision-ec2.yml
+    copyImageToRegion
     ansible-playbook -vv -i localhost, -e "type=${tagsValue}_${aws_region}" provision-ec2.yml
   fi
 
@@ -158,8 +170,13 @@ generateSecurityGroupsIfNotExists() {
 # Per region
 generateAnsibleVars() {
   ar=$1
+  
+  # Forcing update
+  updateList
+
   ec2_var_filename="ec2-vars/${tagsValue}_${ar}.yml"
   currentInstances=$(grep -c "$1" $INSTANCE_OUT)
+
   [[ ! -z $numInstancesRegionArg ]] && { numAddFromCurrent=$((numInstancesRegionArg - currentInstances)) ;  }
   [[ $numAddFromCurrent -lt 1 ]] && numAddFromCurrent=1
   echo "Creating $numAddFromCurrent instances. Dry Run?: ${dry_run:~no}"
@@ -253,7 +270,7 @@ while getopts "f:ylr:n:aDsIyhu:USa:" o; do
             dry_run=" --dry-run "
             ;;
         s)
-            initialSetup $aws_region
+            initialSetup
             ;;
         I)
             generalInformation
