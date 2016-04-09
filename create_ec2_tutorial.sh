@@ -71,21 +71,23 @@ initialSetup() {
   for ar in `allAvailableRegions | xargs echo`
   do
 
-     [[ -z $allRegions ]] && if [ ! "$ar" == "$aws_region" ]; then
+     if [ -z $allRegions ] && [  "$ar" != "$aws_region" ]
+     then
          continue
      fi
 
      echo Region: $ar
      echo "ImageId $(getImage $ar)"
-     [[ -z $(getImage $ar) ]] && copyImageToRegion $ar 
+     [[ -z $(getImage $ar) ]] && copyImageToRegion $ar  
+     echo "Before spinning the instances, please check if the image is available. TODO add a sleep here."
      echo "  Generating Ansible Vars:"
      generateAnsibleVars $ar
      echo "  Generating SGs"
      generateSecurityGroupsIfNotExists $ar
      echo "  Checking KeyPairs:"
      checkKey $ar || echo "    Create the key on this region TODO: add create key"
-     echo " Cloning the image "
-     copyImageToAllRegions
+     #echo " Cloning the image "
+     #copyImageToAllRegions
      echo
   done
 
@@ -117,7 +119,7 @@ updateList() {
     #done
   done
 
-  [[ exitAfterUpdate ]] && exit 0
+  [[ ${exitAfterUpdate:=0} -eq 1 ]] && exit 0
 }
 
 stopAllTheInstancesAcrossAllRegions() {
@@ -176,11 +178,16 @@ generateAnsibleVars() {
 
   ec2_var_filename="ec2-vars/${tagsValue}_${ar}.yml"
   currentInstances=$(grep -c "$1" $INSTANCE_OUT)
+  
+  echo "Requested on $ar: $numInstancesRegionArg , Current existent instances: $currentInstances"
 
   [[ ! -z $numInstancesRegionArg ]] && { numAddFromCurrent=$((numInstancesRegionArg - currentInstances)) ;  }
   [[ $numAddFromCurrent -lt 1 ]] && numAddFromCurrent=1
+
+
   echo "Creating $numAddFromCurrent instances. Dry Run?: ${dry_run:~no}"
-  [[ ! -z $numAddFromCurrent ]] && countUp="ec2_count: $numAddFromCurrent"
+
+  [[ ! -z $numAddFromCurrent ]] && countUp="ec2_count: ${numAddFromCurrent:=1}"
   # Use the power $dry_run
   _imageid=$(getImage $ar)
   SECGROUP=$(aws ec2 --region=${ar} describe-security-groups \
@@ -295,4 +302,4 @@ while getopts "f:ylr:n:aDsIyhu:USa:" o; do
 done
 shift $((OPTIND-1))
 
-[ -z "$aws_region" ] && allRegions=1
+[[ -z $aws_region ]] && allRegions=1
