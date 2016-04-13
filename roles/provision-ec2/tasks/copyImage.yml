@@ -1,0 +1,12 @@
+
+
+- local_action:
+    module: ec2_ami_copy
+    source_region: eu-west-1
+    dest_region: us-east-1
+    source_image_id: ami-xxxxxxx
+    name: SuperService-new-AMI
+    description: latest patch
+    tags: '{"Name":"SuperService-new-AMI", "type":"SuperService"}'
+    wait: yes
+  register: image_id
