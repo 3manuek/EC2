@@ -1,0 +1,11 @@
+ec2_keypair: "breakfixlab2016"
+ec2_security_group: "sg-32ab6b56"
+ec2_instance_type: "m1.small"
+ec2_image: "ami-2092e140"
+
+ec2_region: "us-west-1"
+ec2_tag_Name: "mysql"
+ec2_tag_Type: "breakfixlab"
+ec2_tag_Environment: "breakfixlab"
+ec2_volume_size: 8
+ec2_count: 2

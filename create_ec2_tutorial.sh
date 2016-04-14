@@ -21,6 +21,8 @@ config_file=${_cf%.*}.conf
 
 source $config_file
 
+[[ -d ec2-vars ]] || mkdir ec2-vars
+
 
 usage() {
   #echo "Usage: $0 [-f CSV file] [-y: optimized EBS instance] [-l: list breakfixlab instances] [-r region where to find for breakfixlab instances]" 1>&2
