@@ -2,7 +2,7 @@
 
 Desirable in the future, ansible setup https://github.com/adenot/blog-ansible-provision-ec2
 
-This is a rewritten project (https://github.com/tezuysal-pythian/EC2) but with a totally different approach: more reusable, configurable and manageable. 
+This is a rewritten project (https://github.com/tezuysal-pythian/EC2) but with a totally different approach: more reusable, configurable and manageable.
 
 This project will be included in Pythian organization, whom supported this project.
 
@@ -15,6 +15,9 @@ boto
 jq
 ansible
 ```
+
+
+> Install boto using `sudo /usr/bin/python -m easy_install boto`
 
 Create the key across the regions. This script will be doing this in the next release.
 
