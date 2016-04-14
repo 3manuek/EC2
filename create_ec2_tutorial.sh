@@ -52,8 +52,8 @@ checkKey() {
 }
 
 allAvailableRegions() {
-    _out=$(egrep -o '[a-z]{2}-[a-z]*-[0-9]' regions.txt | uniq)
-    echo $_out | xargs echo
+    _out=$(egrep -o '[a-z]{2}-[a-z]*-[0-9]' regions.txt | uniq | xargs echo)
+    echo $_out
 }
 
 copyImageToRegion() {
@@ -64,29 +64,30 @@ copyImageToRegion() {
 
 
 initialSetup() {
+  _numInstancesRegionArg=$1
   # get security groups per region, create them
   # get key pair, mandatory to provide or have one.
   # get image per region
   # store them in .db
 
-  for ar in `allAvailableRegions | xargs echo`
+  for everyRegion in `allAvailableRegions`
   do
 
-     if [ -z $allRegions ] && [  "$ar" != "$aws_region" ]
+     if [ -z $allRegions ] && [  "$everyRegion" != "$aws_region" ]
      then
          continue
      fi
 
-     echo Region: $ar
-     echo "ImageId $(getImage $ar)"
-     [[ -z $(getImage $ar) ]] && copyImageToRegion $ar  
-     echo "Before spinning the instances, please check if the image is available. TODO add a sleep here."
+     echo Region: $everyRegion
+     echo "ImageId $(getImage $everyRegion)"
+     #[[ -z $(getImage $everyRegion) ]] && copyImageToRegion $everyRegion
+     #echo "Before spinning the instances, please check if the image is available. TODO add a sleep here."
      echo "  Generating Ansible Vars:"
-     generateAnsibleVars $ar
+     generateAnsibleVars $everyRegion $_numInstancesRegionArg
      echo "  Generating SGs"
-     generateSecurityGroupsIfNotExists $ar
+     generateSecurityGroupsIfNotExists $everyRegion
      echo "  Checking KeyPairs:"
-     checkKey $ar || echo "    Create the key on this region TODO: add create key"
+     checkKey $everyRegion || echo "    Create the key on this region TODO: add create key"
      #echo " Cloning the image "
      #copyImageToAllRegions
      echo
@@ -172,17 +173,18 @@ generateSecurityGroupsIfNotExists() {
 
 # Per region
 generateAnsibleVars() {
-  ar=$1
-  
+  ga_ar=$1
+  _numInstancesRegionArg=$2
   # Forcing update
   updateList
 
-  ec2_var_filename="ec2-vars/${tagsValue}_${ar}.yml"
+  ec2_var_filename="ec2-vars/${tagsValue}_${ga_ar}.yml"
   currentInstances=$(grep -c "$1" $INSTANCE_OUT)
-  
-  echo "Requested on $ar: $numInstancesRegionArg , Current existent instances: $currentInstances"
 
-  [[ ! -z $numInstancesRegionArg ]] && { numAddFromCurrent=$((numInstancesRegionArg - currentInstances)) ;  }
+  echo "Requested on $ga_ar: $_numInstancesRegionArg , Current existent instances: $currentInstances"
+
+  [[ ! -z $_numInstancesRegionArg ]] && { numAddFromCurrent=$((_numInstancesRegionArg - currentInstances)) ;  }
+  echo "DEBUG $_numInstancesRegionArg $numAddFromCurrent $currentInstances"
   [[ $numAddFromCurrent -lt 1 ]] && numAddFromCurrent=1
 
 
@@ -190,8 +192,8 @@ generateAnsibleVars() {
 
   [[ ! -z $numAddFromCurrent ]] && countUp="ec2_count: ${numAddFromCurrent:=1}"
   # Use the power $dry_run
-  _imageid=$(getImage $ar)
-  SECGROUP=$(aws ec2 --region=${ar} describe-security-groups \
+  _imageid=$(getImage $ga_ar)
+  SECGROUP=$(aws ec2 --region=${ga_ar} describe-security-groups \
              --group-names $tagsName --query 'SecurityGroups[]' | \
              jq -r '.[] | {GroupId}[]' )
   cat /dev/null > $ec2_var_filename || touch $ec2_var_filename
@@ -201,7 +203,7 @@ ec2_security_group: "${SECGROUP}"
 ec2_instance_type: "${INSTANCE_SIZE}"
 ec2_image: "${_imageid}"
 
-ec2_region: "${ar}"
+ec2_region: "${ga_ar}"
 ec2_tag_Name: "${tagsName}"
 ec2_tag_Type: "${tagsValue}"
 ec2_tag_Environment: "${tagsValue}"
@@ -253,6 +255,7 @@ pip install boto
 
 ## Options
 
+# Need to implement this http://wiki.bash-hackers.org/scripting/posparams
 while getopts "f:ylr:n:aDsIyhu:USa:" o; do
     case "${o}" in
         f)
@@ -278,7 +281,7 @@ while getopts "f:ylr:n:aDsIyhu:USa:" o; do
             dry_run=" --dry-run "
             ;;
         s)
-            initialSetup
+            initialSetup $numInstancesRegionArg
             ;;
         I)
             generalInformation
