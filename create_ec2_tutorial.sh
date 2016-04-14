@@ -112,9 +112,9 @@ updateList() {
   do
     instancesRow=$(aws ec2 describe-instances --region ${ar} --filters "Name=tag:${tagsName},Values=${tagsValue}" \
                   --query 'Reservations[*].Instances[*].[InstanceId, ImageId, PublicDnsName, Placement.AvailabilityZone, State.Name,  InstanceType]' \
-                  --output table | sed -E '/((-){10,}|DescribeInstances)|^$/d' | tr "|" "," | xargs echo | sed -e 's/^,//' | sed '/^$/d')
+                  --output table | sed -E '/((-){10,}|DescribeInstances)|^$/d' | tr "|" "," |  sed -e 's/^,//' | sed '/^$/d')
     [[ -z $instancesRow ]] || instancesRow="$instancesRow $(getSecurityGroups $ar)"
-    [[ -z $instancesRow ]] || echo $instancesRow >> ${INSTANCE_OUT}
+    [[ -z $instancesRow ]] || echo -e "$instancesRow\n" >> ${INSTANCE_OUT}
 
     #grep instance ${INSTANCE_OUT} | awk '{print $3}' | while read line; do
     #  aws ec2 describe-instances ${line} --region ${aws_region} | grep INSTANCE |awk '{print "ID:", $2, "Region:", $11, "Instance type:", $9, "IP:", $14, "Public DNS:", $4}'
