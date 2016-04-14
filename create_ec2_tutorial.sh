@@ -16,8 +16,8 @@
 
 
 _cf=$(basename ${0})
-#config_file=${_cf%.*}
-config_file=${_cf}.conf
+config_file=${_cf%.*}.conf
+#config_file=${_cf}.conf
 
 source $config_file
 
