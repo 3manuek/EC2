@@ -3,6 +3,7 @@
 127.0.0.1 ansible_python_interpreter=/usr/local/bin/python
 
 [breakfixlab]
+52.53.224.253
 54.183.9.87
 54.153.23.2
 54.215.130.91

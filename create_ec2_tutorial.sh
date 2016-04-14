@@ -150,7 +150,7 @@ addInstances() {
     # just aws_region
     # checkImage $aws_region  # check if any
     # if not, execute: ansible-playbook -vv -i localhost, -e "type=${tagsValue}_${aws_region}_image" provision-ec2.yml
-    copyImageToRegion
+    #copyImageToRegion
     ansible-playbook -vv -i localhost, -e "type=${tagsValue}_${aws_region}" provision-ec2.yml
   fi
 
