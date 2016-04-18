@@ -142,6 +142,6 @@ ssh -i <pem> root@<ip> 'dd if=/dev/xvda1 bs=1M | gzip' | gunzip | dd of=./ec2-im
 Mac:
 
 ```
-➜  breakfixlab dd if=/dev/zero of=vmdk-image.raw bs=1048576 count=10240
+ dd if=/dev/zero of=vmdk-image.raw bs=1048576 count=10240
 ```
 
