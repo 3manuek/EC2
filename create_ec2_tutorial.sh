@@ -103,7 +103,7 @@ initialSetup() {
 getInstancesInRegion() {
   ar=$1
   aws ec2 describe-instances --region ${ar} --filters "Name=tag:${tagsName},Values=${tagsValue}" \
-  --query 'Reservations[*].Instances[*].[InstanceId, ImageId, PublicDnsName,Placement.AvailabilityZone, State.Name, InstanceType ]' \
+  --query 'Reservations[*].Instances[*].[InstanceId, ImageId, PublicDnsName,PublicIpAddress,Placement.AvailabilityZone, State.Name, InstanceType ]' \
   --output table | sed -E '/((-){10,}|DescribeInstances)|^$/d' | tr "|" "," | xargs echo | sed -e 's/^,//'
 }
 
@@ -112,11 +112,18 @@ updateList() {
   cat /dev/null > $INSTANCE_OUT
   for ar in $(egrep -o '[a-z]{2}-[a-z]*-[0-9]' regions.txt | uniq)
   do
-    instancesRow=$(aws ec2 describe-instances --region ${ar} --filters "Name=tag:${tagsName},Values=${tagsValue}" \
-                  --query 'Reservations[*].Instances[*].[InstanceId, ImageId, PublicDnsName, Placement.AvailabilityZone, State.Name,  InstanceType]' \
-                  --output table | sed -E '/((-){10,}|DescribeInstances)|^$/d' | tr "|" "," |  sed -e 's/^,//' | sed '/^$/d')
-    [[ -z $instancesRow ]] || instancesRow="$instancesRow $(getSecurityGroups $ar)"
-    [[ -z $instancesRow ]] || echo -e "$instancesRow\n" >> ${INSTANCE_OUT}
+    _secg="$(getSecurityGroups $ar)"
+
+    aws ec2 describe-instances --region ${ar} --filters "Name=tag:${tagsName},Values=${tagsValue}" \
+                  --query 'Reservations[*].Instances[*].[InstanceId, ImageId, PublicDnsName, PublicIpAddress, Placement.AvailabilityZone, State.Name,  InstanceType]' \
+                  --output table | sed -E '/((-){10,}|DescribeInstances)|^$/d' | tr "|" "," |  sed -e 's/^,//' | sed '/^$/d' > ._TEMP_
+    #[[ -z $instancesRow ]] || instancesRow="$instancesRow $(getSecurityGroups $ar)"
+    #[[ -z $instancesRow ]] || parsed=$(echo $instancesRow | sed -e 's/\$/'${_secg}'\n/')
+    #[[ -z $instancesRow ]] || echo -e "$parsed\n" >> ${INSTANCE_OUT}
+    [[ -s ._TEMP_ ]] && sed -ie 's/$/'$_secg'\n/g' ._TEMP_
+    # xargs for no keeping the new line, sed 's/ *$//' for otherwise
+    cat ._TEMP_ | sed 's/ *$//' >> ${INSTANCE_OUT}
+    rm ._TEMP_
 
     #grep instance ${INSTANCE_OUT} | awk '{print $3}' | while read line; do
     #  aws ec2 describe-instances ${line} --region ${aws_region} | grep INSTANCE |awk '{print "ID:", $2, "Region:", $11, "Instance type:", $9, "IP:", $14, "Public DNS:", $4}'

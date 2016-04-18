@@ -123,3 +123,25 @@ Creating 1 instances. Dry Run?:
   Checking KeyPairs:
 breakfixlab2016
 ```
+
+
+Thanks Mario Calvo:  http://smashingboxes.com/blog/how-to-convert-ec2-ami-to-vmdk-for-vagrant
+
+The following does not work due to permissions issue on the ACL:
+
+```
+aws ec2 --region=us-west-1 create-instance-export-task --description "BreakFix lab 2016" --instance-id i-xxxxxx --target-environment vmware --export-to-s3-task DiskImageFormat=vmdk,ContainerFormat=ova,S3Bucket=breakfixlab,S3Prefix=BFL2016
+```
+
+#http://smashingboxes.com/blog/how-to-convert-ec2-ami-to-vmdk-for-vagrant
+
+```
+ssh -i <pem> root@<ip> 'dd if=/dev/xvda1 bs=1M | gzip' | gunzip | dd of=./ec2-image.raw
+```
+
+Mac:
+
+```
+➜  breakfixlab dd if=/dev/zero of=vmdk-image.raw bs=1048576 count=10240
+```
+
